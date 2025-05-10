@@ -6,6 +6,7 @@ package com.example.OrderPaymentOptimizer;
 import com.example.OrderPaymentOptimizer.model.Order;
 import com.example.OrderPaymentOptimizer.model.PaymentMethod;
 import com.example.OrderPaymentOptimizer.parser.JsonReader;
+import com.example.OrderPaymentOptimizer.service.Optimalizer;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,16 +25,13 @@ public class OrderPaymentOptimizerApplication {
 		String ordersPath = args[0];
 		String paymentMethodsPath = args[1];
 
-		//System.out.println("Orders path: " + ordersPath);
-		//System.out.println("Payment methods path: " + paymentMethodsPath);
-
 		JsonReader jsonReader = new JsonReader();
 
         try {
             List<Order> orders = jsonReader.parseOrders(ordersPath);
 			List<PaymentMethod> paymentMethods = jsonReader.parsePaymentMethods(paymentMethodsPath);
 
-			//System.out.println("Files parsed");
+			Optimalizer optimalizer = new Optimalizer(orders, paymentMethods);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
