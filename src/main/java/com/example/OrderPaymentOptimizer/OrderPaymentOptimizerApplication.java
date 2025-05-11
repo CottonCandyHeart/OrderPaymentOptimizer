@@ -31,7 +31,10 @@ public class OrderPaymentOptimizerApplication {
             List<Order> orders = jsonReader.parseOrders(ordersPath);
 			List<PaymentMethod> paymentMethods = jsonReader.parsePaymentMethods(paymentMethodsPath);
 
-			Optimizer optimalizer = new Optimizer(orders, paymentMethods);
+			Optimizer optimizer = new Optimizer(orders, paymentMethods);
+			optimizer.optimize();
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

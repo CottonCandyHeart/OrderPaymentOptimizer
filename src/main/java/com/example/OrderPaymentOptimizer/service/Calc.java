@@ -1,6 +1,7 @@
 package com.example.OrderPaymentOptimizer.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class Calc {
     public boolean haveEnoughMoney(BigDecimal value, BigDecimal limit){
@@ -10,7 +11,7 @@ public class Calc {
     public boolean haveEnoughLoyalPoints(BigDecimal value, BigDecimal pointsLimit){
         // x = (points*100)/value
         BigDecimal solution = pointsLimit.multiply(new BigDecimal("100.00"));
-        solution = solution.divide(value);
+        solution = solution.divide(value, 2, RoundingMode.HALF_UP);
 
         return (solution.compareTo(new BigDecimal("10.00")) >= 0);
     }

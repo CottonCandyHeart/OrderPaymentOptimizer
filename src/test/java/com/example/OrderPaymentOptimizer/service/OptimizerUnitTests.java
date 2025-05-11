@@ -3,6 +3,7 @@ package com.example.OrderPaymentOptimizer.service;
 import com.example.OrderPaymentOptimizer.model.DiscountOption;
 import com.example.OrderPaymentOptimizer.model.Order;
 import com.example.OrderPaymentOptimizer.model.PaymentMethod;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -13,12 +14,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class OptimizerUnitTests {
+    private Optimizer optimizer;
+
+    @BeforeEach
+    void setUp(){
+        List<Order> orders = new ArrayList<>();
+        List<PaymentMethod> paymentMethods = new ArrayList<>();
+        optimizer = new Optimizer(orders,paymentMethods);
+    }
 
     @Test
     void shouldGetDiscountOpiton(){
-        List<Order> orders = new ArrayList<>();
-        List<PaymentMethod> paymentMethods = new ArrayList<>();
-        Optimizer optimizer = new Optimizer(orders,paymentMethods);
+
 
         BigDecimal originValue = new BigDecimal("100.00");
         int discount = 10;
@@ -33,9 +40,6 @@ public class OptimizerUnitTests {
 
     @Test
     void shouldSortListDesc(){
-        List<Order> orders = new ArrayList<>();
-        List<PaymentMethod> paymentMethods = new ArrayList<>();
-        Optimizer optimizer = new Optimizer(orders,paymentMethods);
 
         DiscountOption opt1 = new DiscountOption("mZysk", new BigDecimal("100.00"), new BigDecimal("90.00"), new BigDecimal("10.00"));
         DiscountOption opt2 = new DiscountOption("BosBankrut", new BigDecimal("100.00"), new BigDecimal("80.00"), new BigDecimal("20.00"));
@@ -52,5 +56,7 @@ public class OptimizerUnitTests {
         assertEquals(new BigDecimal("20.00"), sorted.get(1).getDiscountAmount());
         assertEquals(new BigDecimal("10.00"), sorted.get(2).getDiscountAmount());
     }
+
+
 
 }

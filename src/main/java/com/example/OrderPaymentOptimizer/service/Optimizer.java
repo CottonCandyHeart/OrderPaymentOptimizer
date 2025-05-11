@@ -45,6 +45,9 @@ public class Optimizer {
             // get available discounts
             List<DiscountOption> discountOptionList = discountOptions.get(o.getId());
 
+            // TODO probably sth wrong
+            if (discountOptionList == null) continue;
+
             // search discount list
             for (DiscountOption dcto : discountOptionList){
 
@@ -118,6 +121,11 @@ public class Optimizer {
             }
         }
 
+        // show results
+        for (PaymentMethod pm : paymentMethods){
+            System.out.println(pm.getId() + " " + usedLimits.get(pm.getId()));
+        }
+
 
     }
 
@@ -129,6 +137,8 @@ public class Optimizer {
         for (Order o : this.orders){
             List<String> promotions = o.getPromotions();
             discountOptionList = new ArrayList<>();
+
+            if (promotions == null) continue;
 
             // search all payment methods
             for (PaymentMethod pm : paymentMethods){
