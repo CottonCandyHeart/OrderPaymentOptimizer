@@ -31,6 +31,8 @@ public class Optimizer {
     }
 
     public void findBestSolutions(){
+        boolean isPaid;
+
         HashMap<String, BigDecimal> usedLimits = new HashMap<>();
         for (PaymentMethod pm : paymentMethods){
             usedLimits.put(pm.getId(), new BigDecimal("0.00"));
@@ -38,6 +40,8 @@ public class Optimizer {
 
         // for each order
         for (Order o : orders){
+            isPaid = false;
+
             // get available discounts
             List<DiscountOption> discountOptionList = discountOptions.get(o.getId());
 
@@ -46,8 +50,40 @@ public class Optimizer {
 
                 // check if it's paid partial
                 if (dcto.getPaymentMethodId().equals("MIX")){
+                    // check if points can be used
+                    PaymentMethod payMeth = paymentMethods.stream()
+                            .filter(pm -> pm.getId().equals("PUNKTY"))
+                            .findFirst()
+                            .orElse(null);
+
+                    BigDecimal substPoints = payMeth.getLimit().subtract(usedLimits.get("PUNKTY"));
+
+                    if (calc.haveEnoughLoyalPoints(dcto.getOriginalValue(), substPoints)){
+
+                        // find if there are other credits
+                        for (PaymentMethod pm : paymentMethods){
+                            if (!pm.getId().equals("PUNKTY")){
+
+                                // check if full price can be paid
+                                BigDecimal substCard = pm.getLimit().subtract(usedLimits.get(pm.getId()));
+                                if (calc.haveEnoughMoney(dcto.getOriginalValue(), (substCard.add(substPoints)))){
+
+                                    // substract credits
+                                    BigDecimal tempValue = dcto.getDiscountedValue();
+                                    tempValue = tempValue.subtract(substPoints);
+
+                                    usedLimits.put("PUNKTY", (usedLimits.get("PUNKTY").add(substPoints)));
+                                    usedLimits.put(pm.getId(), (usedLimits.get(pm.getId()).add(tempValue)));
 
 
+                                    isPaid = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (isPaid) break;
+                    }
                 } else {
                     // find payment method
                     PaymentMethod payMeth = paymentMethods.stream()
@@ -60,9 +96,24 @@ public class Optimizer {
                             .get(dcto.getPaymentMethodId()))))){
                         // count final price
                         usedLimits.put(dcto.getPaymentMethodId(), (usedLimits.get(dcto.getPaymentMethodId())
-                                .add(dcto.getOriginalValue())));
+                                .add(dcto.getDiscountedValue())));
+
+                        isPaid = true;
+                        break;
                     }
-                    break;
+                }
+            }
+
+            // check if price was paid
+            if (!isPaid){
+                // find any card that allows to pay without discount
+                for (PaymentMethod pm : paymentMethods) {
+                    // check if it's possible to pay
+                    if (calc.haveEnoughMoney(o.getValue(), (pm.getLimit().subtract(usedLimits.get(pm.getId()))))){
+                        usedLimits.put(pm.getId(), usedLimits.get(pm.getId()).add(o.getValue()));
+
+                        break;
+                    }
                 }
             }
         }
