@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -98,5 +99,39 @@ public class OptimizerUnitTests {
         assertThat(actualDiscounts.get(0).getPaymentMethodId()).isIn("MIX", "CARD1");
     }
 
+    @Test
+    void shouldAllocateLimitsForPaymentMethods() {
+        Order order = new Order();
+        order.setId("ORD1");
+        order.setValue(new BigDecimal("100.00"));
+        order.setPromotions(Arrays.asList("CARD1", "PUNKTY"));
+
+        List<Order> orders = List.of(order);
+
+        PaymentMethod card1 = new PaymentMethod();
+        card1.setId("CARD1");
+        card1.setDiscount(10);
+        card1.setLimit(new BigDecimal("500.00"));
+
+        PaymentMethod points = new PaymentMethod();
+        points.setId("PUNKTY");
+        points.setDiscount(0);
+        points.setLimit(new BigDecimal("20.00"));
+
+        List<PaymentMethod> paymentMethods = List.of(card1, points);
+
+        Optimizer optimizer = new Optimizer(orders, paymentMethods);
+
+        optimizer.countDiscountsForOrders();
+        HashMap<String, BigDecimal> result = optimizer.findBestSolutions();
+
+        assertThat(result.get("CARD1")).isEqualTo(new BigDecimal("90.000"));
+        assertThat(result.get("PUNKTY")).isEqualTo(new BigDecimal("0.00"));
+    }
+
+    @Test
+    void shouldReturnTrueForOptimize(){
+        assertTrue(optimizer.optimize());
+    }
 
 }

@@ -25,12 +25,14 @@ public class Optimizer {
     }
 
 
-    public void optimize(){
+    public boolean optimize(){
         countDiscountsForOrders();
         findBestSolutions();
+
+        return true;
     }
 
-    public void findBestSolutions(){
+    public HashMap<String, BigDecimal> findBestSolutions(){
         boolean isPaid;
 
         HashMap<String, BigDecimal> usedLimits = new HashMap<>();
@@ -45,7 +47,6 @@ public class Optimizer {
             // get available discounts
             List<DiscountOption> discountOptionList = discountOptions.get(o.getId());
 
-            // TODO probably sth wrong
             if (discountOptionList == null) continue;
 
             // search discount list
@@ -126,6 +127,7 @@ public class Optimizer {
             System.out.println(pm.getId() + " " + usedLimits.get(pm.getId()));
         }
 
+        return usedLimits;
 
     }
 
