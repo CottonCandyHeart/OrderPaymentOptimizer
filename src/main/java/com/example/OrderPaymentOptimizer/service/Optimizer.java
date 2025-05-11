@@ -27,10 +27,52 @@ public class Optimizer {
 
     public void optimize(){
         countDiscountsForOrders();
+        findBestSolutions();
+    }
+
+    public void findBestSolutions(){
+        HashMap<String, BigDecimal> usedLimits = new HashMap<>();
+        for (PaymentMethod pm : paymentMethods){
+            usedLimits.put(pm.getId(), new BigDecimal("0.00"));
+        }
+
+        // for each order
+        for (Order o : orders){
+            // get available discounts
+            List<DiscountOption> discountOptionList = discountOptions.get(o.getId());
+
+            // search discount list
+            for (DiscountOption dcto : discountOptionList){
+
+                // check if it's paid partial
+                if (dcto.getPaymentMethodId().equals("MIX")){
+
+
+                } else {
+                    // find payment method
+                    PaymentMethod payMeth = paymentMethods.stream()
+                            .filter(pm -> pm.getId().equals(dcto.getPaymentMethodId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    // check if it's possible to use discount
+                    if (calc.haveEnoughMoney(dcto.getOriginalValue(), (payMeth.getLimit().subtract(usedLimits
+                            .get(dcto.getPaymentMethodId()))))){
+                        // count final price
+                        usedLimits.put(dcto.getPaymentMethodId(), (usedLimits.get(dcto.getPaymentMethodId())
+                                .add(dcto.getOriginalValue())));
+                    }
+                    break;
+                }
+            }
+        }
+
+
     }
 
     public void countDiscountsForOrders(){
         List<DiscountOption> discountOptionList;
+        BigDecimal pointsLimit = new BigDecimal("0.00");
 
         // for each order
         for (Order o : this.orders){
@@ -49,23 +91,27 @@ public class Optimizer {
                         DiscountOption dc = getDiscountOpiton(o.getValue(), pm.getDiscount(), pm.getId());
                         // add discount to the list
                         discountOptionList.add(dc);
-
-                    // TODO check if can be paid partial
-                    } //else if (){
-
-                    //}
+                    }
                 }
-
-
-
             }
 
-            // TODO add points discount to the list
+            // check if can be paid partial
+            for (PaymentMethod pm : paymentMethods) {
+                // save points limit for later
+                if (pm.getId().equals("PUNKTY")){
+                    pointsLimit = pm.getLimit();
+                } else if (calc.haveEnoughMoney(o.getValue(), (pm.getLimit().add(pointsLimit))) && calc.haveEnoughLoyalPoints(o.getValue(), pointsLimit)) {
+                    // count discount
+                    DiscountOption dc = getDiscountOpiton(o.getValue(), 10, ("MIX"));
+                    // add discount to the list
+                    discountOptionList.add(dc);
+                }
+            }
 
             // sort array
             discountOptionList = sortListDesc(discountOptionList);
             // add to hashmap
-            discountOptions.put(o.getId(), discountOptionList);
+            this.discountOptions.put(o.getId(), discountOptionList);
         }
     }
 
