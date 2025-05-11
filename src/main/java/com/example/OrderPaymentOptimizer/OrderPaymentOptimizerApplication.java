@@ -6,7 +6,7 @@ package com.example.OrderPaymentOptimizer;
 import com.example.OrderPaymentOptimizer.model.Order;
 import com.example.OrderPaymentOptimizer.model.PaymentMethod;
 import com.example.OrderPaymentOptimizer.parser.JsonReader;
-import com.example.OrderPaymentOptimizer.service.Optimalizer;
+import com.example.OrderPaymentOptimizer.service.Optimizer;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +31,7 @@ public class OrderPaymentOptimizerApplication {
             List<Order> orders = jsonReader.parseOrders(ordersPath);
 			List<PaymentMethod> paymentMethods = jsonReader.parsePaymentMethods(paymentMethodsPath);
 
-			Optimalizer optimalizer = new Optimalizer(orders, paymentMethods);
+			Optimizer optimalizer = new Optimizer(orders, paymentMethods);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
