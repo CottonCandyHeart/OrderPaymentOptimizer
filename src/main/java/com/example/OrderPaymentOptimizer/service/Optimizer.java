@@ -144,7 +144,7 @@ public class Optimizer {
             for (PaymentMethod pm : paymentMethods){
 
                 // check if payment method is available
-                if ( promotions.contains(pm.getId()) ){
+                if ( pm.getId().equals("PUNKTY") || promotions.contains(pm.getId()) ){
 
                     // check if can be fully paid
                     if (calc.haveEnoughMoney(o.getValue(), pm.getLimit())){
@@ -157,23 +157,29 @@ public class Optimizer {
             }
 
             // check if can be paid partial
-            for (PaymentMethod pm : paymentMethods) {
-                // save points limit for later
-                if (pm.getId().equals("PUNKTY")){
-                    pointsLimit = pm.getLimit();
-                } else if (calc.haveEnoughMoney(o.getValue(), (pm.getLimit().add(pointsLimit))) && calc.haveEnoughLoyalPoints(o.getValue(), pointsLimit)) {
-                    // count discount
-                    DiscountOption dc = getDiscountOpiton(o.getValue(), 10, ("MIX"));
-                    // add discount to the list
-                    discountOptionList.add(dc);
-                }
-            }
+            discountOptionList = getPartialPayment(o, pointsLimit, discountOptionList);
 
             // sort array
             discountOptionList = sortListDesc(discountOptionList);
             // add to hashmap
             this.discountOptions.put(o.getId(), discountOptionList);
         }
+    }
+
+    public List<DiscountOption>  getPartialPayment(Order o, BigDecimal pointsLimit, List<DiscountOption> discountOptionList){
+        for (PaymentMethod pm : paymentMethods) {
+            // save points limit for later
+            if (pm.getId().equals("PUNKTY")){
+                pointsLimit = pm.getLimit();
+            } else if (calc.haveEnoughMoney(o.getValue(), (pm.getLimit().add(pointsLimit))) && calc.haveEnoughLoyalPoints(o.getValue(), pointsLimit)) {
+                // count discount
+                DiscountOption dc = getDiscountOpiton(o.getValue(), 10, ("MIX"));
+                // add discount to the list
+                discountOptionList.add(dc);
+            }
+        }
+
+        return discountOptionList;
     }
 
     public DiscountOption getDiscountOpiton(BigDecimal originValue, int discount, String paymentMethodId){

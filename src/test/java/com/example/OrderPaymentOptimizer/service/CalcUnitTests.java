@@ -1,6 +1,5 @@
 package com.example.OrderPaymentOptimizer.service;
 
-import com.example.OrderPaymentOptimizer.parser.JsonReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

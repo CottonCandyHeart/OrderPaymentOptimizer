@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -25,7 +26,6 @@ public class OptimizerUnitTests {
 
     @Test
     void shouldGetDiscountOpiton(){
-
 
         BigDecimal originValue = new BigDecimal("100.00");
         int discount = 10;
@@ -57,6 +57,46 @@ public class OptimizerUnitTests {
         assertEquals(new BigDecimal("10.00"), sorted.get(2).getDiscountAmount());
     }
 
+    @Test
+    void shouldCountDiscountsForOrders() {
+
+        Order order1 = new Order();
+        order1.setId("ORD1");
+        order1.setValue(new BigDecimal("100.00"));
+        order1.setPromotions(Arrays.asList("CARD1", "PUNKTY"));
+
+        List<Order> orders = new ArrayList<>();
+        orders.add(order1);
+
+        PaymentMethod card1 = new PaymentMethod();
+        card1.setId("CARD1");
+        card1.setDiscount(10);
+        card1.setLimit(new BigDecimal("500.00"));
+
+        PaymentMethod points = new PaymentMethod();
+        points.setId("PUNKTY");
+        points.setDiscount(0);
+        points.setLimit(new BigDecimal("20.00"));
+
+        List<PaymentMethod> paymentMethods = new ArrayList<>();
+        paymentMethods.add(card1);
+        paymentMethods.add(points);
+        Optimizer optimizer = new Optimizer(orders, paymentMethods);
+
+        optimizer.countDiscountsForOrders();
+
+        List<DiscountOption> actualDiscounts = optimizer
+                .sortListDesc(optimizer
+                        .getPartialPayment(order1, points.getLimit(),
+                                new ArrayList<>(
+                                        List.of(optimizer.getDiscountOpiton(new BigDecimal("100.00"), 10, "CARD1"))
+                                )
+                        )
+                );
+
+        assertThat(actualDiscounts.size()).isEqualTo(2);
+        assertThat(actualDiscounts.get(0).getPaymentMethodId()).isIn("MIX", "CARD1");
+    }
 
 
 }
